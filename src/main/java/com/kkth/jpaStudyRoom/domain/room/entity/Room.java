@@ -28,4 +28,5 @@ public class Room extends BaseEntity {
         this.name = name;
         this.capacity = capacity;
     }
+
 }
