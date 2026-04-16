@@ -41,4 +41,52 @@ class ReservationRepositoryTest {
         assertThat(savedReservation.getMember().getName()).isEqualTo("태형");
         assertThat(savedReservation.getRoom().getName()).isEqualTo("스터디룸 A");
     }
+
+    @Test
+    void overlappingReservationTest() {
+
+        Member member = memberRepository.save(new Member("태형"));
+        Room room = roomRepository.save(new Room("스터디룸 A", 4));
+
+        // 기존 예약 (10:00 ~ 12:00)
+        reservationRepository.save(new Reservation(
+                member,
+                room,
+                LocalDateTime.of(2026, 4, 6, 10, 0),
+                LocalDateTime.of(2026, 4, 6, 12, 0)
+        ));
+
+        // 겹치는 예약 (11:00 ~ 13:00)
+        boolean exists = reservationRepository.existsOverlappingReservation(
+                room.getId(),
+                LocalDateTime.of(2026, 4, 6, 11, 0),
+                LocalDateTime.of(2026, 4, 6, 13, 0)
+        );
+
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    void nonOverlappingReservationTest() {
+
+        Member member = memberRepository.save(new Member("태형"));
+        Room room = roomRepository.save(new Room("스터디룸 A", 4));
+
+        // 기존 예약 (10:00 ~ 12:00)
+        reservationRepository.save(new Reservation(
+                member,
+                room,
+                LocalDateTime.of(2026, 4, 6, 10, 0),
+                LocalDateTime.of(2026, 4, 6, 12, 0)
+        ));
+
+        // 안 겹침 (12:00 ~ 14:00)
+        boolean exists = reservationRepository.existsOverlappingReservation(
+                room.getId(),
+                LocalDateTime.of(2026, 4, 6, 12, 0),
+                LocalDateTime.of(2026, 4, 6, 14, 0)
+        );
+
+        assertThat(exists).isFalse();
+    }
 }
