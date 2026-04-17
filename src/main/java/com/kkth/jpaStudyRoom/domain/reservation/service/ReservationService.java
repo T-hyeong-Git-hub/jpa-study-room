@@ -2,6 +2,8 @@ package com.kkth.jpaStudyRoom.domain.reservation.service;
 
 import com.kkth.jpaStudyRoom.domain.member.entity.Member;
 import com.kkth.jpaStudyRoom.domain.member.repository.MemberRepository;
+import com.kkth.jpaStudyRoom.domain.reservation.dto.ReservationDto;
+import com.kkth.jpaStudyRoom.domain.reservation.dto.ReservationSearchCondition;
 import com.kkth.jpaStudyRoom.domain.reservation.entity.Reservation;
 import com.kkth.jpaStudyRoom.domain.reservation.repository.ReservationRepository;
 import com.kkth.jpaStudyRoom.domain.room.entity.Room;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -45,4 +48,9 @@ public class ReservationService {
 
         return reservation.getId();
     }
+
+    public List<ReservationDto> searchReservations(ReservationSearchCondition condition) {
+        return reservationRepository.searchReservations(condition);
+    }
 }
+

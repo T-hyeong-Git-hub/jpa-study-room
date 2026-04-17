@@ -2,6 +2,8 @@ package com.kkth.jpaStudyRoom.domain.reservation.repository;
 
 import com.kkth.jpaStudyRoom.domain.member.entity.Member;
 import com.kkth.jpaStudyRoom.domain.member.repository.MemberRepository;
+import com.kkth.jpaStudyRoom.domain.reservation.dto.ReservationDto;
+import com.kkth.jpaStudyRoom.domain.reservation.dto.ReservationSearchCondition;
 import com.kkth.jpaStudyRoom.domain.reservation.entity.Reservation;
 import com.kkth.jpaStudyRoom.domain.room.entity.Room;
 import com.kkth.jpaStudyRoom.domain.room.repository.RoomRepository;
@@ -10,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
@@ -88,5 +92,37 @@ class ReservationRepositoryTest {
         );
 
         assertThat(exists).isFalse();
+    }
+
+    @Test
+    void 예약_조회_성공() {
+        Member member1 = memberRepository.save(new Member("태형"));
+        Member member2 = memberRepository.save(new Member("영희"));
+
+        Room room1 = roomRepository.save(new Room("스터디룸A", 4));
+        Room room2 = roomRepository.save(new Room("스터디룸B", 6));
+
+        reservationRepository.save(new Reservation(
+                member1,
+                room1,
+                LocalDateTime.of(2025, 1, 1, 10, 0),
+                LocalDateTime.of(2025, 1, 1, 12, 0)
+        ));
+
+        reservationRepository.save(new Reservation(
+                member2,
+                room2,
+                LocalDateTime.of(2025, 1, 2, 14, 0),
+                LocalDateTime.of(2025, 1, 2, 16, 0)
+        ));
+
+        ReservationSearchCondition condition = new ReservationSearchCondition();
+        condition.setMemberName("태형");
+
+        List<ReservationDto> result = reservationRepository.searchReservations(condition);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getMemberName()).isEqualTo("태형");
+        assertThat(result.get(0).getRoomName()).isEqualTo("스터디룸A");
     }
 }
