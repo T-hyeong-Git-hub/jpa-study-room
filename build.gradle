@@ -33,6 +33,9 @@ dependencies {
 	runtimeOnly 'com.h2database:h2'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
+
+	//Spring Security dependency 추가
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 	
 	//Swagger dependency 추가
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
