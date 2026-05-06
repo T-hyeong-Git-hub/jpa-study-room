@@ -10,4 +10,6 @@ public class LoginResponse {
     private Long memberId;
     private String email;
     private String name;
+    private String token;
+
 }

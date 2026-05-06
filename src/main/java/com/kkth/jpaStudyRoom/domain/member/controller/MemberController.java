@@ -7,6 +7,7 @@ import com.kkth.jpaStudyRoom.domain.member.dto.MemberSignupResponse;
 import com.kkth.jpaStudyRoom.domain.member.entity.Member;
 import com.kkth.jpaStudyRoom.domain.member.service.MemberService;
 import com.kkth.jpaStudyRoom.global.response.ApiResponse;
+import com.kkth.jpaStudyRoom.global.security.JwtProvider;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/members")
 public class MemberController {
     private final MemberService memberService;
+
+    private final JwtProvider jwtProvider;
 
     @PostMapping("/signup")
     public ApiResponse<MemberSignupResponse> signup(@RequestBody @Valid MemberSignupRequest request) {
@@ -44,11 +47,14 @@ public class MemberController {
                 request.getPassword()
         );
 
+        String token = jwtProvider.createToken(member.getId());
+
         return ApiResponse.success(
                 new LoginResponse(
                         member.getId(),
                         member.getEmail(),
-                        member.getName()
+                        member.getName(),
+                        token
                 )
         );
     }
