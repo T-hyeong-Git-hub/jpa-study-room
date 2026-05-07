@@ -11,8 +11,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReservationCreateRequest {
-    @NotNull(message = "회원 ID는 필수입니다.")
-    private Long memberId;
     @NotNull(message = "방 ID는 필수입니다.")
     private Long roomId;
 

@@ -6,6 +6,7 @@ import com.kkth.jpaStudyRoom.domain.reservation.service.ReservationService;
 import com.kkth.jpaStudyRoom.global.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,8 +20,13 @@ public class ReservationController {
 
     @PostMapping
     public ApiResponse<ReservationResponse> createReservation(@RequestBody @Valid ReservationCreateRequest request) {
+
+        Long memberId = (Long) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+
         Long reservationId = reservationService.createReservation(
-                request.getMemberId(),
+                memberId,
                 request.getRoomId(),
                 request.getStartTime(),
                 request.getEndTime()
