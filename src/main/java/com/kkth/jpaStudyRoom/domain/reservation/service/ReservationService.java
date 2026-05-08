@@ -9,6 +9,8 @@ import com.kkth.jpaStudyRoom.domain.reservation.repository.ReservationRepository
 import com.kkth.jpaStudyRoom.domain.room.entity.Room;
 import com.kkth.jpaStudyRoom.domain.room.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,9 +50,9 @@ public class ReservationService {
 
         return reservation.getId();
     }
-
-    public List<ReservationDto> searchReservations(ReservationSearchCondition condition) {
-        return reservationRepository.searchReservations(condition);
+    @Transactional(readOnly = true)
+    public Page<ReservationDto> searchReservations(ReservationSearchCondition condition, Pageable pageable) {
+        return reservationRepository.searchReservations(condition, pageable);
     }
 }
 

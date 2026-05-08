@@ -10,6 +10,9 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.expression.spel.ast.Projection;
 
 import java.time.LocalDateTime;
@@ -40,13 +43,13 @@ public class ReservationRepositoryImpl implements ReservationRepositoryCustom{
     }
 
     @Override
-    public List<ReservationDto> searchReservations(ReservationSearchCondition condition) {
+    public Page<ReservationDto> searchReservations(ReservationSearchCondition condition, Pageable pageable) {
         QMember member = QMember.member;
         QReservation reservation = QReservation.reservation;
         QRoom room = QRoom.room;
 
-        return queryFactory.select(
-                Projections.constructor(
+        List<ReservationDto> content = queryFactory
+                .select(Projections.constructor(
                         ReservationDto.class,
                         reservation.id,
                         member.name,
@@ -56,13 +59,27 @@ public class ReservationRepositoryImpl implements ReservationRepositoryCustom{
                 ))
                 .from(reservation)
                 .join(reservation.member, member)
-                .join(reservation.room, room)
+                .join(reservation.room,room)
                 .where(
                         memberNameEq(condition.getMemberName()),
                         roomNameEq(condition.getRoomName()),
                         startAfter(condition.getStartAfter()),
                         endBefore(condition.getEndBefore())
-                ).fetch();
+                ).offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = queryFactory.select(reservation.count())
+                .from(reservation)
+                .join(reservation.member, member)
+                .join(reservation.room,room)
+                .where(
+                        memberNameEq(condition.getMemberName()),
+                        roomNameEq(condition.getRoomName()),
+                        startAfter(condition.getStartAfter()),
+                        endBefore(condition.getEndBefore())
+                ).fetchOne();
+        return new PageImpl<>(content, pageable, total);
     }
 
     private BooleanExpression memberNameEq(String memberName) {

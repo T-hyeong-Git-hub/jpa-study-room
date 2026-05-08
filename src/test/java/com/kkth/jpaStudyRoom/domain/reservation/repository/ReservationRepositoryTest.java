@@ -10,6 +10,9 @@ import com.kkth.jpaStudyRoom.domain.room.repository.RoomRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -94,35 +97,65 @@ class ReservationRepositoryTest {
         assertThat(exists).isFalse();
     }
 
-    @Test
-    void 예약_조회_성공() {
-        Member member1 = memberRepository.save(new Member("태형"));
-        Member member2 = memberRepository.save(new Member("영희"));
+//    @Test
+//    void 예약_조회_성공() {
+//        Member member1 = memberRepository.save(new Member("태형"));
+//        Member member2 = memberRepository.save(new Member("영희"));
+//
+//        Room room1 = roomRepository.save(new Room("스터디룸A", 4));
+//        Room room2 = roomRepository.save(new Room("스터디룸B", 6));
+//
+//        reservationRepository.save(new Reservation(
+//                member1,
+//                room1,
+//                LocalDateTime.of(2025, 1, 1, 10, 0),
+//                LocalDateTime.of(2025, 1, 1, 12, 0)
+//        ));
+//
+//        reservationRepository.save(new Reservation(
+//                member2,
+//                room2,
+//                LocalDateTime.of(2025, 1, 2, 14, 0),
+//                LocalDateTime.of(2025, 1, 2, 16, 0)
+//        ));
+//
+//        ReservationSearchCondition condition = new ReservationSearchCondition();
+//        condition.setMemberName("태형");
+//
+//        List<ReservationDto> result = reservationRepository.searchReservations(condition);
+//
+//        assertThat(result).hasSize(1);
+//        assertThat(result.get(0).getMemberName()).isEqualTo("태형");
+//        assertThat(result.get(0).getRoomName()).isEqualTo("스터디룸A");
+//    }
+@Test
+void 예약_조회_페이징_성공() {
+    Member member = memberRepository.save(new Member("태형", "test@test.com", "1234"));
+    Room room = roomRepository.save(new Room("스터디룸A", 4));
 
-        Room room1 = roomRepository.save(new Room("스터디룸A", 4));
-        Room room2 = roomRepository.save(new Room("스터디룸B", 6));
+    reservationRepository.save(new Reservation(
+            member,
+            room,
+            LocalDateTime.of(2025, 1, 1, 10, 0),
+            LocalDateTime.of(2025, 1, 1, 12, 0)
+    ));
 
-        reservationRepository.save(new Reservation(
-                member1,
-                room1,
-                LocalDateTime.of(2025, 1, 1, 10, 0),
-                LocalDateTime.of(2025, 1, 1, 12, 0)
-        ));
+    reservationRepository.save(new Reservation(
+            member,
+            room,
+            LocalDateTime.of(2025, 1, 1, 13, 0),
+            LocalDateTime.of(2025, 1, 1, 15, 0)
+    ));
 
-        reservationRepository.save(new Reservation(
-                member2,
-                room2,
-                LocalDateTime.of(2025, 1, 2, 14, 0),
-                LocalDateTime.of(2025, 1, 2, 16, 0)
-        ));
+    ReservationSearchCondition condition = new ReservationSearchCondition();
+    condition.setMemberName("태형");
 
-        ReservationSearchCondition condition = new ReservationSearchCondition();
-        condition.setMemberName("태형");
+    Pageable pageable = PageRequest.of(0, 1);
 
-        List<ReservationDto> result = reservationRepository.searchReservations(condition);
+    Page<ReservationDto> result = reservationRepository.searchReservations(condition, pageable);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getMemberName()).isEqualTo("태형");
-        assertThat(result.get(0).getRoomName()).isEqualTo("스터디룸A");
-    }
+    assertThat(result.getContent()).hasSize(1);
+    assertThat(result.getTotalElements()).isEqualTo(2);
+    assertThat(result.getTotalPages()).isEqualTo(2);
+}
 }

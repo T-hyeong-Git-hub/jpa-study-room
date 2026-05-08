@@ -27,4 +27,8 @@ public class Member extends BaseEntity {
         this.password = password;
     }
 
+    public Member(String name) {
+        this.name = name;
+    }
+
 }
