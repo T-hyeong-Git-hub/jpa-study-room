@@ -8,17 +8,20 @@ import com.kkth.jpaStudyRoom.domain.room.entity.QRoom;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.expression.spel.ast.Projection;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.kkth.jpaStudyRoom.domain.reservation.entity.QReservation.reservation;
+import static org.springframework.util.StringUtils.hasText;
 
 @RequiredArgsConstructor
 public class ReservationRepositoryImpl implements ReservationRepositoryCustom{
@@ -65,11 +68,13 @@ public class ReservationRepositoryImpl implements ReservationRepositoryCustom{
                         roomNameEq(condition.getRoomName()),
                         startAfter(condition.getStartAfter()),
                         endBefore(condition.getEndBefore())
-                ).offset(pageable.getOffset())
+                )
+                .orderBy(reservation.startTime.desc())
+                .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        Long total = queryFactory.select(reservation.count())
+        JPAQuery<Long> countQuery = queryFactory.select(reservation.count())
                 .from(reservation)
                 .join(reservation.member, member)
                 .join(reservation.room,room)
@@ -78,16 +83,21 @@ public class ReservationRepositoryImpl implements ReservationRepositoryCustom{
                         roomNameEq(condition.getRoomName()),
                         startAfter(condition.getStartAfter()),
                         endBefore(condition.getEndBefore())
-                ).fetchOne();
-        return new PageImpl<>(content, pageable, total);
+                );
+
+        return PageableExecutionUtils.getPage(
+                content,
+                pageable,
+                countQuery::fetchOne
+        );
     }
 
     private BooleanExpression memberNameEq(String memberName) {
-        return memberName != null ? QMember.member.name.eq(memberName) : null;
+        return hasText(memberName) ? QMember.member.name.eq(memberName) : null;
     }
 
     private BooleanExpression roomNameEq(String roomName) {
-        return roomName != null ? QRoom.room.name.eq(roomName) : null;
+        return hasText(roomName) ? QRoom.room.name.eq(roomName) : null;
     }
 
     private BooleanExpression startAfter(LocalDateTime startAfter) {

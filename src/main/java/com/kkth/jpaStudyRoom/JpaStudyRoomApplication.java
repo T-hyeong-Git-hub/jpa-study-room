@@ -16,14 +16,6 @@ public class JpaStudyRoomApplication {
 		SpringApplication.run(JpaStudyRoomApplication.class, args);
 	}
 
-	@Bean
-	CommandLineRunner initData(MemberRepository memberRepository,
-							   RoomRepository roomRepository) {
-		return args -> {
-			memberRepository.save(new Member("태형","xogud123","123"));
-			roomRepository.save(new Room("스터디룸A", 4));
-		};
-	}
 
 }
 

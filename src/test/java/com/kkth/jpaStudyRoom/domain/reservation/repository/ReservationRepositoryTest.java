@@ -158,4 +158,58 @@ void 예약_조회_페이징_성공() {
     assertThat(result.getTotalElements()).isEqualTo(2);
     assertThat(result.getTotalPages()).isEqualTo(2);
 }
+    @Test
+    void 예약_조회_페이징_및_시작시간_내림차순_정렬_성공() {
+        // given
+        Member member = memberRepository.save(
+                new Member("태형", "test@test.com", "1234")
+        );
+
+        Room room = roomRepository.save(
+                new Room("스터디룸A", 4)
+        );
+
+        reservationRepository.save(new Reservation(
+                member,
+                room,
+                LocalDateTime.of(2025, 1, 1, 10, 0),
+                LocalDateTime.of(2025, 1, 1, 12, 0)
+        ));
+
+        reservationRepository.save(new Reservation(
+                member,
+                room,
+                LocalDateTime.of(2025, 1, 1, 13, 0),
+                LocalDateTime.of(2025, 1, 1, 15, 0)
+        ));
+
+        reservationRepository.save(new Reservation(
+                member,
+                room,
+                LocalDateTime.of(2025, 1, 1, 9, 0),
+                LocalDateTime.of(2025, 1, 1, 10, 0)
+        ));
+
+        ReservationSearchCondition condition = new ReservationSearchCondition();
+        condition.setMemberName("태형");
+
+        PageRequest pageRequest = PageRequest.of(0, 2);
+
+        // when
+        Page<ReservationDto> result = reservationRepository.searchReservations(
+                condition,
+                pageRequest
+        );
+
+        // then
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getTotalElements()).isEqualTo(3);
+        assertThat(result.getTotalPages()).isEqualTo(2);
+
+        assertThat(result.getContent().get(0).getStartTime())
+                .isEqualTo(LocalDateTime.of(2025, 1, 1, 13, 0));
+
+        assertThat(result.getContent().get(1).getStartTime())
+                .isEqualTo(LocalDateTime.of(2025, 1, 1, 10, 0));
+    }
 }
