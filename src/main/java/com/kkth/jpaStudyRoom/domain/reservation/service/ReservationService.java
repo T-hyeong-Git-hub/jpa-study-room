@@ -8,6 +8,8 @@ import com.kkth.jpaStudyRoom.domain.reservation.entity.Reservation;
 import com.kkth.jpaStudyRoom.domain.reservation.repository.ReservationRepository;
 import com.kkth.jpaStudyRoom.domain.room.entity.Room;
 import com.kkth.jpaStudyRoom.domain.room.repository.RoomRepository;
+import com.kkth.jpaStudyRoom.global.exception.CustomException;
+import com.kkth.jpaStudyRoom.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,7 +42,7 @@ public class ReservationService {
         boolean exists = reservationRepository.existsOverlappingReservation(roomId, startTime, endTime);
 
         if (exists) {
-            throw new IllegalStateException("이미 예약된 시간입니다.");
+            throw new CustomException(ErrorCode.RESERVATION_CONFLICT);
         }
 
         // 4. 예약 생성
