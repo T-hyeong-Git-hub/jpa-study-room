@@ -1,12 +1,6 @@
 <div align="center">
 
-```
-╔══════════════════════════════════════════════════════╗
-║                                                      ║
-║   📚  JPA Study Room Reservation API                 ║
-║                                                      ║
-╚══════════════════════════════════════════════════════╝
-```
+# 📚 JPA Study Room Reservation API
 
 **Spring Boot + JPA + QueryDSL** 기반의 스터디룸 예약 백엔드 API
 
