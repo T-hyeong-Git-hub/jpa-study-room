@@ -25,8 +25,8 @@ public class TestFixture {
 
     public static LocalDateTime startTime(int hour) {
         return LocalDateTime.of(
-                2025,
-                1,
+                2026,
+                5,
                 1,
                 hour,
                 0
@@ -35,8 +35,8 @@ public class TestFixture {
 
     public static LocalDateTime endTime(int hour) {
         return LocalDateTime.of(
-                2025,
-                1,
+                2026,
+                5,
                 1,
                 hour,
                 0

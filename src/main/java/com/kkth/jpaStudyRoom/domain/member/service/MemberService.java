@@ -2,6 +2,8 @@ package com.kkth.jpaStudyRoom.domain.member.service;
 
 import com.kkth.jpaStudyRoom.domain.member.entity.Member;
 import com.kkth.jpaStudyRoom.domain.member.repository.MemberRepository;
+import com.kkth.jpaStudyRoom.global.exception.CustomException;
+import com.kkth.jpaStudyRoom.global.exception.ErrorCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,7 +19,7 @@ public class MemberService {
 
     public Member signup(String name, String email, String password) {
         if (memberRepository.findByEmail(email).isPresent()) {
-            throw new IllegalStateException("이미 존재하는 이메일입니다.");
+            throw new CustomException(ErrorCode.DUPLICATED_EMAIL);
         }
 
         String encodedPassword = passwordEncoder.encode(password);
@@ -29,10 +31,10 @@ public class MemberService {
 
     public Member login(String email, String password) {
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("회원 없음"));
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         if (!passwordEncoder.matches(password, member.getPassword())) {
-            throw new IllegalStateException("비밀번호 불일치");
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
 
         return member;

@@ -7,19 +7,20 @@ import com.kkth.jpaStudyRoom.domain.reservation.dto.ReservationSearchCondition;
 import com.kkth.jpaStudyRoom.domain.reservation.entity.Reservation;
 import com.kkth.jpaStudyRoom.domain.room.entity.Room;
 import com.kkth.jpaStudyRoom.domain.room.repository.RoomRepository;
+import com.kkth.jpaStudyRoom.support.TestFixture;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-
-import java.time.LocalDateTime;
-import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest
+@Transactional
 class ReservationRepositoryTest {
     @Autowired
     private MemberRepository memberRepository;
@@ -31,164 +32,102 @@ class ReservationRepositoryTest {
     private ReservationRepository reservationRepository;
 
     @Test
-    void saveReservationTest() {
-        Member member = memberRepository.save(new Member("태형"));
-        Room room = roomRepository.save(new Room("스터디룸 A", 4));
+    @DisplayName("예약 저장 시 예약자와 이용하는 룸의 이름을 같이 저장한다.")
+    void saveReservation() {
+        //given
+        Member member = saveMember();
+        Room room = saveRoom();
 
-        Reservation reservation = new Reservation(
-                member,
-                room,
-                LocalDateTime.of(2026, 4, 6, 10, 0),
-                LocalDateTime.of(2026, 4, 6, 12, 0)
-        );
+        saveReservation(member, room,10, 12);
 
-        Reservation savedReservation = reservationRepository.save(reservation);
+        //when
+        Reservation savedReservation = saveReservation(member, room,10, 12);;
 
+        //then
         assertThat(savedReservation.getId()).isNotNull();
         assertThat(savedReservation.getMember().getName()).isEqualTo("태형");
-        assertThat(savedReservation.getRoom().getName()).isEqualTo("스터디룸 A");
+        assertThat(savedReservation.getRoom().getName()).isEqualTo("스터디룸A");
     }
 
     @Test
-    void overlappingReservationTest() {
-
-        Member member = memberRepository.save(new Member("태형"));
-        Room room = roomRepository.save(new Room("스터디룸 A", 4));
+    @DisplayName("겹치는 예약이 존재하면 true를 반환한다.")
+    void overlappingReservation() {
+        //given
+        Member member = saveMember();
+        Room room = saveRoom();
 
         // 기존 예약 (10:00 ~ 12:00)
-        reservationRepository.save(new Reservation(
-                member,
-                room,
-                LocalDateTime.of(2026, 4, 6, 10, 0),
-                LocalDateTime.of(2026, 4, 6, 12, 0)
-        ));
+        saveReservation(member, room,10, 12);
 
+        //when
         // 겹치는 예약 (11:00 ~ 13:00)
         boolean exists = reservationRepository.existsOverlappingReservation(
                 room.getId(),
-                LocalDateTime.of(2026, 4, 6, 11, 0),
-                LocalDateTime.of(2026, 4, 6, 13, 0)
+                TestFixture.startTime(11),
+                TestFixture.endTime(13)
         );
 
+        //then
         assertThat(exists).isTrue();
     }
 
     @Test
-    void nonOverlappingReservationTest() {
-
-        Member member = memberRepository.save(new Member("태형"));
-        Room room = roomRepository.save(new Room("스터디룸 A", 4));
+    @DisplayName("겹치지 않는 예약이면 false를 반환한다.")
+    void nonOverlappingReservation() {
+        //given
+        Member member = saveMember();
+        Room room = saveRoom();
 
         // 기존 예약 (10:00 ~ 12:00)
-        reservationRepository.save(new Reservation(
-                member,
-                room,
-                LocalDateTime.of(2026, 4, 6, 10, 0),
-                LocalDateTime.of(2026, 4, 6, 12, 0)
-        ));
+        saveReservation(member, room,10, 12);
 
+        //when
         // 안 겹침 (12:00 ~ 14:00)
         boolean exists = reservationRepository.existsOverlappingReservation(
                 room.getId(),
-                LocalDateTime.of(2026, 4, 6, 12, 0),
-                LocalDateTime.of(2026, 4, 6, 14, 0)
+                TestFixture.startTime(12),
+                TestFixture.endTime(14)
         );
 
+        //then
         assertThat(exists).isFalse();
     }
 
-//    @Test
-//    void 예약_조회_성공() {
-//        Member member1 = memberRepository.save(new Member("태형"));
-//        Member member2 = memberRepository.save(new Member("영희"));
-//
-//        Room room1 = roomRepository.save(new Room("스터디룸A", 4));
-//        Room room2 = roomRepository.save(new Room("스터디룸B", 6));
-//
-//        reservationRepository.save(new Reservation(
-//                member1,
-//                room1,
-//                LocalDateTime.of(2025, 1, 1, 10, 0),
-//                LocalDateTime.of(2025, 1, 1, 12, 0)
-//        ));
-//
-//        reservationRepository.save(new Reservation(
-//                member2,
-//                room2,
-//                LocalDateTime.of(2025, 1, 2, 14, 0),
-//                LocalDateTime.of(2025, 1, 2, 16, 0)
-//        ));
-//
-//        ReservationSearchCondition condition = new ReservationSearchCondition();
-//        condition.setMemberName("태형");
-//
-//        List<ReservationDto> result = reservationRepository.searchReservations(condition);
-//
-//        assertThat(result).hasSize(1);
-//        assertThat(result.get(0).getMemberName()).isEqualTo("태형");
-//        assertThat(result.get(0).getRoomName()).isEqualTo("스터디룸A");
-//    }
-@Test
-void 예약_조회_페이징_성공() {
-    Member member = memberRepository.save(new Member("태형", "test@test.com", "1234"));
-    Room room = roomRepository.save(new Room("스터디룸A", 4));
-
-    reservationRepository.save(new Reservation(
-            member,
-            room,
-            LocalDateTime.of(2025, 1, 1, 10, 0),
-            LocalDateTime.of(2025, 1, 1, 12, 0)
-    ));
-
-    reservationRepository.save(new Reservation(
-            member,
-            room,
-            LocalDateTime.of(2025, 1, 1, 13, 0),
-            LocalDateTime.of(2025, 1, 1, 15, 0)
-    ));
-
-    ReservationSearchCondition condition = new ReservationSearchCondition();
-    condition.setMemberName("태형");
-
-    Pageable pageable = PageRequest.of(0, 1);
-
-    Page<ReservationDto> result = reservationRepository.searchReservations(condition, pageable);
-
-    assertThat(result.getContent()).hasSize(1);
-    assertThat(result.getTotalElements()).isEqualTo(2);
-    assertThat(result.getTotalPages()).isEqualTo(2);
-}
     @Test
-    void 예약_조회_페이징_및_시작시간_내림차순_정렬_성공() {
+    @DisplayName("예약 조회 결과를 페이징할 수 있다")
+    void searchReservationWithPaging() {
+
+        //given
+        Member member = saveMember();
+        Room room = saveRoom();
+
+        saveReservation(member, room,10, 12);
+        saveReservation(member, room,13, 15);
+
+        ReservationSearchCondition condition = new ReservationSearchCondition();
+        condition.setMemberName("태형");
+
+        Pageable pageable = PageRequest.of(0, 1);
+
+        //when
+        Page<ReservationDto> result = reservationRepository.searchReservations(condition, pageable);
+
+        //then
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        assertThat(result.getTotalPages()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("예약 조회 결과를 시작 시간 내림차순으로 정렬한다")
+    void searchReservationOrderByStartTimeDesc() {
         // given
-        Member member = memberRepository.save(
-                new Member("태형", "test@test.com", "1234")
-        );
+        Member member = saveMember();
+        Room room = saveRoom();
 
-        Room room = roomRepository.save(
-                new Room("스터디룸A", 4)
-        );
-
-        reservationRepository.save(new Reservation(
-                member,
-                room,
-                LocalDateTime.of(2025, 1, 1, 10, 0),
-                LocalDateTime.of(2025, 1, 1, 12, 0)
-        ));
-
-        reservationRepository.save(new Reservation(
-                member,
-                room,
-                LocalDateTime.of(2025, 1, 1, 13, 0),
-                LocalDateTime.of(2025, 1, 1, 15, 0)
-        ));
-
-        reservationRepository.save(new Reservation(
-                member,
-                room,
-                LocalDateTime.of(2025, 1, 1, 9, 0),
-                LocalDateTime.of(2025, 1, 1, 10, 0)
-        ));
+        saveReservation(member, room,10, 12);
+        saveReservation(member, room,13, 15);
+        saveReservation(member, room,9, 10);
 
         ReservationSearchCondition condition = new ReservationSearchCondition();
         condition.setMemberName("태형");
@@ -207,9 +146,27 @@ void 예약_조회_페이징_성공() {
         assertThat(result.getTotalPages()).isEqualTo(2);
 
         assertThat(result.getContent().get(0).getStartTime())
-                .isEqualTo(LocalDateTime.of(2025, 1, 1, 13, 0));
+                .isEqualTo(TestFixture.startTime(13));
 
         assertThat(result.getContent().get(1).getStartTime())
-                .isEqualTo(LocalDateTime.of(2025, 1, 1, 10, 0));
+                .isEqualTo(TestFixture.startTime(10));
+    }
+
+    private Member saveMember() {
+        return memberRepository.save(TestFixture.createMember());
+    }
+
+    private Room saveRoom() {
+        return roomRepository.save(TestFixture.createRoom());
+    }
+    private Reservation saveReservation(Member member, Room room, int startHour, int endHour) {
+        Reservation reservation = new Reservation(
+                member,
+                room,
+                TestFixture.startTime(startHour),
+                TestFixture.endTime(endHour)
+        );
+        return reservationRepository.save(reservation);
+
     }
 }
