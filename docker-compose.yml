@@ -33,3 +33,13 @@ services:
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
+
+  nginx:
+    image: nginx:latest
+    container_name: studyroom-nginx
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
