@@ -1,0 +1,75 @@
+# ==========================
+# GitHub Actions Workflow 이름
+# ==========================
+name: CI Build
+
+# ==========================
+# 언제(Trigger) 실행할 것인가?
+# main 브랜치에 push가 발생하면 실행
+# ex)
+# git push origin main
+# ==========================
+on:
+  push:
+    branches:
+      - main
+
+# ==========================
+# 수행할 작업(Job) 정의
+# 하나의 Workflow 안에는 여러 Job을 만들 수도 있다.
+# 현재는 Build 작업 하나만 수행한다.
+# ==========================
+jobs:
+  build:
+
+    # ==========================
+    # GitHub에서 제공하는 Ubuntu 최신 환경에서 실행
+    # 실제로는 임시 Ubuntu 서버가 생성되고
+    # Build가 끝나면 자동으로 삭제된다.
+    # ==========================
+    runs-on: ubuntu-latest
+
+    # ==========================
+    # Job에서 순차적으로 실행할 작업(Step)
+    # ==========================
+    steps:
+
+      # --------------------------
+      # 현재 GitHub Repository를
+      # 실행 환경(Ubuntu)에 Clone 한다.
+      # 이 과정이 없으면 소스코드가 없어서
+      # Build를 수행할 수 없다.
+      # --------------------------
+      - uses: actions/checkout@v4
+
+      # --------------------------
+      # Java 21 설치
+      # 프로젝트는 Java 21 기반이므로 Build를 위해 JDK를 설치한다.
+      # Temurin은 Eclipse Foundation에서
+      # 제공하는 OpenJDK 배포판으로
+      # Docker에서도 동일한 버전을 사용하고 있다.
+      # --------------------------
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # --------------------------
+      # Linux에서는 gradlew에
+      # 실행 권한이 없을 수 있다.
+      # chmod +x 명령으로 실행 권한을 부여한다.
+      # --------------------------
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      # --------------------------
+      # Gradle Build 수행
+      # clean : 이전 Build 결과 삭제
+      # build : 컴파일, 테스트, Jar 생성
+      # Build가 실패하면 Workflow도 실패한다.
+      # Build가 성공하면 CI 성공이다.
+      # --------------------------
+      - name: Build
+        run: ./gradlew clean build
+
