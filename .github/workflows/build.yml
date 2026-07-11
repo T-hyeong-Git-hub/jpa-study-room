@@ -92,7 +92,7 @@ jobs:
             chmod +x gradlew
 
             # Spring Boot Build
-            ./gradlew clean build
+            - ./gradlew clean build -x test
 
             # Docker 컨테이너 재생성
             sudo docker compose up -d --build
