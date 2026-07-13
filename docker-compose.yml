@@ -4,6 +4,12 @@ services:
     image: mysql:8.0
     container_name: studyroom-mysql
 
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
     environment:
       MYSQL_ROOT_PASSWORD: 1234
       MYSQL_DATABASE: studyroom
@@ -24,10 +30,11 @@ services:
     # Docker Hub에서 이미 만들어진 Image를 사용
     image: taehyeong75/jpa-study-room:latest
     container_name: studyroom-app
-
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
     ports:
       - "8083:8083"
