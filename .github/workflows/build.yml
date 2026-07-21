@@ -94,28 +94,28 @@ jobs:
           cache-to: type=gha,mode=max
 
       # Build 성공 후 EC2에 접속하여 자동 배포
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-
-          script: |
-
-            cd ~/jpa-study-room
-
-            # 최신 compose 파일 가져오기
-            git pull
-
-            # 최신 이미지 다운로드
-            sudo docker compose pull
-
-            # 기존 컨테이너 종료
-            sudo docker compose down
-
-            # 새 컨테이너 실행
-            sudo docker compose up -d
-
-            # 사용하지 않는 이미지 정리
-            sudo docker image prune -f
+#      - name: Deploy to EC2
+#        uses: appleboy/ssh-action@v1.2.0
+#        with:
+#          host: ${{ secrets.EC2_HOST }}
+#          username: ${{ secrets.EC2_USERNAME }}
+#          key: ${{ secrets.EC2_PRIVATE_KEY }}
+#
+#          script: |
+#
+#            cd ~/jpa-study-room
+#
+#            # 최신 compose 파일 가져오기
+#            git pull
+#
+#            # 최신 이미지 다운로드
+#            sudo docker compose pull
+#
+#            # 기존 컨테이너 종료
+#            sudo docker compose down
+#
+#            # 새 컨테이너 실행
+#            sudo docker compose up -d
+#
+#            # 사용하지 않는 이미지 정리
+#            sudo docker image prune -f
