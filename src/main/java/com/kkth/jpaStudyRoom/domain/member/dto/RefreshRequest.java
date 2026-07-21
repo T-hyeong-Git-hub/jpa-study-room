@@ -2,15 +2,15 @@ package com.kkth.jpaStudyRoom.domain.member.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
-public class LoginResponse {
+public class RefreshRequest {
 
     private Long memberId;
-    private String email;
-    private String name;
-    private String accessToken;
+
     private String refreshToken;
 
 }

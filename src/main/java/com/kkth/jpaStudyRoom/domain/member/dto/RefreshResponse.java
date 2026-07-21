@@ -5,12 +5,8 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class LoginResponse {
+public class RefreshResponse {
 
-    private Long memberId;
-    private String email;
-    private String name;
     private String accessToken;
-    private String refreshToken;
 
 }

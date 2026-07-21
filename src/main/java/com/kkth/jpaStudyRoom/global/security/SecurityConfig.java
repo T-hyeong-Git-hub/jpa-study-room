@@ -12,6 +12,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
+    private static final String[] WHITE_LIST = {
+            "/api/members/signup",
+            "/api/members/login",
+            "/api/auth/refresh",
+            "/swagger-ui/**",
+            "/v3/api-docs/**"
+    };
 
     private final JwtProvider jwtProvider;
 
@@ -22,12 +29,8 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/members/signup",
-                                "/api/members/login",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**"
-                        ).permitAll()
+                        .requestMatchers(WHITE_LIST)
+                        .permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
