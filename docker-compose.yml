@@ -27,9 +27,14 @@ services:
       - "6379:6379"
 
   app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
     # Docker Hub에서 이미 만들어진 Image를 사용
     image: taehyeong75/jpa-study-room:latest
     container_name: studyroom-app
+
     depends_on:
       mysql:
         condition: service_healthy
@@ -42,12 +47,16 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
-  nginx:
-    image: nginx:latest
-    container_name: studyroom-nginx
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    image: taehyeong75/jpa-study-room-frontend:latest
+    container_name: studyroom-frontend
+
     depends_on:
       - app
+
     ports:
       - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
