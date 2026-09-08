@@ -23,13 +23,16 @@ export async function apiRequest<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
+  const headers = new Headers(options.headers)
+  headers.set('Accept', 'application/json')
+  if (options.body) headers.set('Content-Type', 'application/json')
+
+  const accessToken = getAccessToken()
+  if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`)
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
-    headers: {
-      Accept: 'application/json',
-      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
-      ...options.headers,
-    },
+    headers,
   })
 
   const contentType = response.headers.get('content-type')
@@ -47,3 +50,4 @@ export async function apiRequest<T>(
 
   return body.data
 }
+import { getAccessToken } from '../auth/storage'
